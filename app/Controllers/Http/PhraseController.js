@@ -4,6 +4,8 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
+const Phrase = use('App/Models/Phrase')
+
 /**
  * Resourceful controller for interacting with phrases
  */
@@ -18,19 +20,11 @@ class PhraseController {
    * @param {View} ctx.view
    */
   async index ({ request, response, view }) {
+    const phrases = await Phrase.all()
+
+    return response.ok(phrases)
   }
 
-  /**
-   * Render a form to be used for creating a new phrase.
-   * GET phrases/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
-  }
 
   /**
    * Create/save a new phrase.
@@ -41,6 +35,10 @@ class PhraseController {
    * @param {Response} ctx.response
    */
   async store ({ request, response }) {
+    const data = request.only(['author', 'phrase'])
+    const phrase = await Phrase.create(data)
+
+    return response.ok(phrase)
   }
 
   /**
@@ -53,18 +51,11 @@ class PhraseController {
    * @param {View} ctx.view
    */
   async show ({ params, request, response, view }) {
-  }
+    const { id } = params
 
-  /**
-   * Render a form to update an existing phrase.
-   * GET phrases/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
+    const phrase = await Phrase.find(id)
+
+    return response.ok(phrase)
   }
 
   /**
@@ -76,6 +67,16 @@ class PhraseController {
    * @param {Response} ctx.response
    */
   async update ({ params, request, response }) {
+    const data = request.only(['author', 'phrase'])
+    const { id } = params
+
+    const phrase = await Phrase.find(id)
+
+    phrase.merge(data)
+
+    await phrase.save()
+
+    return response.ok(phrase)
   }
 
   /**
@@ -87,6 +88,13 @@ class PhraseController {
    * @param {Response} ctx.response
    */
   async destroy ({ params, request, response }) {
+    const { id } = params
+
+    const phrase = await Phrase.find(id)
+
+    await phrase.delete()
+
+    return response.noContent()
   }
 }
 
